@@ -1,6 +1,6 @@
 "use client"
 
-import { FileText, Calendar } from "lucide-react"
+import { FileText, Calendar, User } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import type { DocumentRecord } from "@/lib/types"
 import { formatFileSize } from "@/lib/crypto-utils"
@@ -53,6 +53,14 @@ export function DocumentList({ documents }: DocumentListProps) {
                     <Calendar className="h-3 w-3" />
                     <span>{formatDate(doc.uploadedAt)}</span>
                   </div>
+                  {doc.uploadedBy && (
+                    <div className="flex items-center gap-2 text-xs bg-muted/50 rounded-md px-2 py-1.5 mb-2">
+                      <User className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-muted-foreground">
+                        Uploaded by {doc.uploadedBy.name} ({doc.uploadedBy.email})
+                      </span>
+                    </div>
+                  )}
                   <div className="bg-muted/50 p-2 rounded">
                     <p className="text-xs text-muted-foreground">Document hash stored securely</p>
                   </div>

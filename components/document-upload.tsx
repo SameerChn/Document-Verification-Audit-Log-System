@@ -33,11 +33,18 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
         uploadedAt: new Date().toISOString(),
       }
 
-      await fetch("/api/documents", {
+      const docResponse = await fetch("/api/documents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(doc),
       })
+
+      if (!docResponse.ok) {
+        const error = await docResponse.json()
+        throw new Error(error.error || "Failed to upload document")
+      }
+
+      const { document: savedDoc } = await docResponse.json()
 
       const auditLog: AuditLog = {
         id: crypto.randomUUID(),
@@ -46,7 +53,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
         hash,
         timestamp: new Date().toISOString(),
         status: "success",
-        message: `Document uploaded and hash generated successfully`,
+        message: `Document uploaded successfully by admin`,
       }
 
       await fetch("/api/audit-logs", {
@@ -55,10 +62,11 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
         body: JSON.stringify(auditLog),
       })
 
-      setUploadedDoc(doc)
+      setUploadedDoc(savedDoc)
       onUploadComplete()
     } catch (error) {
       console.error("Error processing file:", error)
+      alert(error instanceof Error ? error.message : "Failed to upload document")
     } finally {
       setIsProcessing(false)
     }

@@ -5,6 +5,10 @@ export interface DocumentRecord {
   type: string
   hash: string
   uploadedAt: string
+  uploadedBy?: {
+    email: string
+    name: string
+  }
 }
 
 export interface AuditLog {
@@ -15,4 +19,18 @@ export interface AuditLog {
   timestamp: string
   status: "success" | "warning" | "error"
   message: string
+  user?: {
+    email: string
+    name: string
+    role: "admin" | "user"
+  }
+}
+
+export interface User {
+  _id?: string
+  email: string
+  password?: string
+  name: string
+  role: "admin" | "user"
+  createdAt: string
 }

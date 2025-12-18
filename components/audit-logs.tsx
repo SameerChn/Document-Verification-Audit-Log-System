@@ -1,6 +1,6 @@
 "use client"
 
-import { FileText, CheckCircle2, XCircle, Upload } from "lucide-react"
+import { FileText, CheckCircle2, XCircle, Upload, User } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import type { AuditLog } from "@/lib/types"
 
@@ -42,6 +42,17 @@ export function AuditLogs({ logs }: AuditLogsProps) {
     }).format(date)
   }
 
+  const getActionLabel = (action: AuditLog["action"]) => {
+    switch (action) {
+      case "upload":
+        return "Uploaded"
+      case "verify_success":
+        return "Verified (Match)"
+      case "verify_fail":
+        return "Verified (No Match)"
+    }
+  }
+
   return (
     <Card className="p-6">
       <div className="mb-4">
@@ -69,6 +80,15 @@ export function AuditLogs({ logs }: AuditLogsProps) {
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">{log.message}</p>
+                  {log.user && (
+                    <div className="flex items-center gap-2 text-xs bg-muted/50 rounded-md px-2 py-1.5 mt-2">
+                      <User className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-muted-foreground">
+                        <span className="font-medium">{getActionLabel(log.action)}</span> by {log.user.name} (
+                        {log.user.email}) • <span className="uppercase text-[10px]">{log.user.role}</span>
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

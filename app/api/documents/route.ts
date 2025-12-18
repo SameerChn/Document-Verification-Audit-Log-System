@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { connectToDatabase } from "@/lib/mongodb"
+import { requireAdmin } from "@/lib/auth-middleware"
 import type { DocumentRecord } from "@/lib/types"
 
 export async function GET() {
@@ -16,13 +17,26 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const user = await requireAdmin()
+
     const document: DocumentRecord = await request.json()
     const { db } = await connectToDatabase()
 
-    await db.collection("documents").insertOne(document)
+    const documentWithUser = {
+      ...document,
+      uploadedBy: {
+        email: user.email,
+        name: user.name,
+      },
+    }
 
-    return NextResponse.json({ success: true, document })
+    await db.collection("documents").insertOne(documentWithUser)
+
+    return NextResponse.json({ success: true, document: documentWithUser })
   } catch (error) {
+    if (error instanceof Error && error.message.includes("required")) {
+      return NextResponse.json({ error: error.message }, { status: 403 })
+    }
     console.error("Error saving document:", error)
     return NextResponse.json({ error: "Failed to save document" }, { status: 500 })
   }

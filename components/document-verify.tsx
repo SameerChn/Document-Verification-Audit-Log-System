@@ -19,6 +19,7 @@ export function DocumentVerify({ onVerifyComplete }: DocumentVerifyProps) {
     status: "success" | "error" | "warning"
     message: string
     fileName?: string
+    uploadedBy?: { email: string; name: string }
   } | null>(null)
 
   const handleFileVerify = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,7 +38,11 @@ export function DocumentVerify({ onVerifyComplete }: DocumentVerifyProps) {
         body: JSON.stringify({ hash }),
       })
 
-      const { verified, document } = await verifyResponse.json()
+      if (!verifyResponse.ok) {
+        throw new Error("Verification failed")
+      }
+
+      const { verified, document, verifiedBy } = await verifyResponse.json()
 
       let auditLog: AuditLog
 
@@ -46,6 +51,7 @@ export function DocumentVerify({ onVerifyComplete }: DocumentVerifyProps) {
           status: "success",
           message: "Document verified successfully! Hash matches the original.",
           fileName: document.name,
+          uploadedBy: document.uploadedBy,
         })
 
         auditLog = {
@@ -85,7 +91,7 @@ export function DocumentVerify({ onVerifyComplete }: DocumentVerifyProps) {
       console.error("Error verifying file:", error)
       setVerificationResult({
         status: "error",
-        message: "An error occurred during verification.",
+        message: "An error occurred during verification. Please make sure you're logged in.",
       })
     } finally {
       setIsVerifying(false)
@@ -132,7 +138,12 @@ export function DocumentVerify({ onVerifyComplete }: DocumentVerifyProps) {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium mb-1">{verificationResult.message}</p>
               {verificationResult.fileName && (
-                <p className="text-sm text-muted-foreground mb-2">Original: {verificationResult.fileName}</p>
+                <p className="text-sm text-muted-foreground mb-1">Original: {verificationResult.fileName}</p>
+              )}
+              {verificationResult.uploadedBy && (
+                <p className="text-xs text-muted-foreground">
+                  Uploaded by: {verificationResult.uploadedBy.name} ({verificationResult.uploadedBy.email})
+                </p>
               )}
             </div>
           </div>
