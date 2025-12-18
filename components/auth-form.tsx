@@ -7,14 +7,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Shield, Loader2 } from "lucide-react"
+import { Shield, Loader2, ArrowLeft } from "lucide-react"
 
 interface AuthFormProps {
   onSuccess: () => void
+  defaultIsLogin?: boolean
+  onBack?: () => void
 }
 
-export function AuthForm({ onSuccess }: AuthFormProps) {
-  const [isLogin, setIsLogin] = useState(true)
+export function AuthForm({ onSuccess, defaultIsLogin = true, onBack }: AuthFormProps) {
+  const [isLogin, setIsLogin] = useState(defaultIsLogin)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [formData, setFormData] = useState({
@@ -55,7 +57,17 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/20 p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md relative">
+        {onBack && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="absolute left-4 top-4 z-10"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        )}
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-primary/10 rounded-xl">
