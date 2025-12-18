@@ -26,9 +26,12 @@ export default function Page() {
         const data = await response.json()
         setUser(data.user)
         setShowLanding(false)
+        return true
       }
+      return false
     } catch (error) {
       console.error("Auth check failed:", error)
+      return false
     } finally {
       setIsLoading(false)
     }
@@ -59,9 +62,25 @@ export default function Page() {
     }
   }
 
+  const handleBackToHome = () => {
+    setUser(null)
+    setShowLanding(true)
+  }
+
   useEffect(() => {
     checkAuth()
   }, [])
+
+  // Re-check auth when navigating away from landing page if user is not set
+  useEffect(() => {
+    if (!showLanding && !user) {
+      // Only check if we're not already loading
+      if (!isLoading) {
+        checkAuth()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showLanding])
 
   useEffect(() => {
     if (user) {
@@ -92,18 +111,26 @@ export default function Page() {
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              onClick={() => {
-                setIsLoginMode(true)
-                setShowLanding(false)
+              onClick={async () => {
+                // Check if user is already authenticated before showing login
+                const isAuthenticated = await checkAuth()
+                if (!isAuthenticated) {
+                  setIsLoginMode(true)
+                  setShowLanding(false)
+                }
               }}
               className="text-gray-500 hover:text-black hover:bg-transparent text-sm font-medium"
             >
               Log in
             </Button>
             <Button
-              onClick={() => {
-                setIsLoginMode(false)
-                setShowLanding(false)
+              onClick={async () => {
+                // Check if user is already authenticated before showing signup
+                const isAuthenticated = await checkAuth()
+                if (!isAuthenticated) {
+                  setIsLoginMode(false)
+                  setShowLanding(false)
+                }
               }}
               className="bg-black text-white hover:bg-gray-800 rounded-full px-6 transition-transform active:scale-95"
             >
@@ -137,21 +164,18 @@ export default function Page() {
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button
-                  onClick={() => {
-                    setIsLoginMode(true)
-                    setShowLanding(false)
+                  onClick={async () => {
+                    // Check if user is already authenticated before showing login
+                    const isAuthenticated = await checkAuth()
+                    if (!isAuthenticated) {
+                      setIsLoginMode(true)
+                      setShowLanding(false)
+                    }
                   }}
                   className="h-14 px-8 rounded-full bg-black text-white hover:bg-gray-800 text-lg shadow-xl shadow-black/5"
                 >
                   Start Verifying
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowLanding(false)}
-                  className="h-14 px-8 rounded-full border-gray-200 hover:bg-gray-50 text-lg hover:border-gray-300"
-                >
-                  Read Documentation
                 </Button>
               </div>
             </div>
@@ -335,8 +359,12 @@ export default function Page() {
     )
   }
 
-  if (!user) {
+  if (!user && !isLoading) {
     return <AuthForm onSuccess={checkAuth} defaultIsLogin={isLoginMode} onBack={() => setShowLanding(true)} />
+  }
+
+  if (!user) {
+    return null
   }
 
   return (
@@ -348,7 +376,7 @@ export default function Page() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={handleLogout}
+              onClick={handleBackToHome}
               className="mr-2"
             >
               <ArrowLeft className="h-5 w-5" />
