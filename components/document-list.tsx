@@ -1,15 +1,21 @@
 "use client"
 
-import { FileText, Calendar, User } from "lucide-react"
+import { FileText, Calendar, User, Trash2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import type { DocumentRecord } from "@/lib/types"
 import { formatFileSize } from "@/lib/crypto-utils"
+import { useState } from "react"
 
 interface DocumentListProps {
   documents: DocumentRecord[]
+  isAdmin?: boolean
+  onDelete?: (id: string) => Promise<void>
 }
 
-export function DocumentList({ documents }: DocumentListProps) {
+export function DocumentList({ documents, isAdmin = false, onDelete }: DocumentListProps) {
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return new Intl.DateTimeFormat("en-US", {
@@ -19,6 +25,20 @@ export function DocumentList({ documents }: DocumentListProps) {
       hour: "2-digit",
       minute: "2-digit",
     }).format(date)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!onDelete) return
+    if (!confirm("Are you sure you want to permanently delete this document?")) return
+
+    setDeletingId(id)
+    try {
+      await onDelete(id)
+    } catch (error) {
+      console.error("Delete failed", error)
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   return (
@@ -39,7 +59,7 @@ export function DocumentList({ documents }: DocumentListProps) {
       ) : (
         <div className="space-y-3">
           {documents.map((doc) => (
-            <div key={doc.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
+            <div key={doc.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors group">
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-primary/10 rounded-full">
                   <FileText className="h-4 w-4 text-primary" />
@@ -61,8 +81,24 @@ export function DocumentList({ documents }: DocumentListProps) {
                       </span>
                     </div>
                   )}
-                  <div className="bg-muted/50 p-2 rounded">
-                    <p className="text-xs text-muted-foreground">Document hash stored securely</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="bg-muted/50 p-2 rounded inline-block">
+                       <p className="text-xs text-muted-foreground">Document hash stored securely</p>
+                    </div>
+                    
+                    {isAdmin && onDelete && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleDelete(doc._id || doc.id)}
+                        disabled={deletingId === (doc._id || doc.id)}
+                        title="Delete document"
+                      >
+                         <Trash2 className="h-4 w-4" />
+                         <span className="sr-only">Delete</span>
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

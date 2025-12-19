@@ -1,4 +1,5 @@
 export interface DocumentRecord {
+  _id?: string
   id: string
   name: string
   size: number

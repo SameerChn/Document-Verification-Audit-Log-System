@@ -404,7 +404,18 @@ export default function Page() {
               <DocumentVerify onVerifyComplete={refreshData} />
             </div>
             <div className="grid lg:grid-cols-2 gap-6">
-              <DocumentList documents={documents} />
+              <DocumentList 
+                documents={documents} 
+                isAdmin={true}
+                onDelete={async (id) => {
+                  try {
+                    await fetch(`/api/documents/${id}`, { method: "DELETE" })
+                    refreshData()
+                  } catch (error) {
+                    console.error("Failed to delete document", error)
+                  }
+                }}
+              />
               <AuditLogs logs={auditLogs} />
             </div>
           </>
