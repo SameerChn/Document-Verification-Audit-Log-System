@@ -34,9 +34,12 @@ export async function POST(request: Request) {
     })
 
     // Set HTTP-only cookie
+    const isProduction = process.env.NODE_ENV === "production"
+    const allowInsecure = process.env.ALLOW_INSECURE_COOKIES === "true"
+
     response.cookies.set("auth-token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isProduction && !allowInsecure, // Allow insecure in prod if explicitly enabled
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: "/",
