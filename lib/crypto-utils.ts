@@ -1,21 +1,9 @@
-import script from "crypto-js"
-
 export async function generateFileHash(file: File): Promise<string> {
-   return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        // @ts-ignore
-        const wordArray = script.lib.WordArray.create(event.target.result)
-        const hash = script.SHA256(wordArray).toString()
-        resolve(hash)
-      } else {
-        reject(new Error("Failed to read file"))
-      }
-    }
-    reader.onerror = (error) => reject(error)
-    reader.readAsArrayBuffer(file)
-  })
+  const buffer = await file.arrayBuffer()
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+  return hashHex
 }
 
 export function formatFileSize(bytes: number): string {
