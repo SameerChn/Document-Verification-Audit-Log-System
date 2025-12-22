@@ -30,4 +30,8 @@ jobs:
           docker pull sameerchn/yourapp:latest
           docker stop yourapp || true
           docker rm yourapp || true
-          docker run -d -p 3000:3000 --name yourapp sameerchn/yourapp:latest
+          docker run -d \
+            --env-file /home/azureuser/.env \
+            -p 3000:3000 \
+            --name yourapp \
+            sameerchn/yourapp:latest
