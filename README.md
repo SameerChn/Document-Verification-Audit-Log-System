@@ -1,66 +1,135 @@
-# Document Verification & Audit Log System
+# Document Verification Audit Log System
 
-## Description
-A system that verifies document integrity by generating and storing hashes and maintaining audit logs. It creates immutable records for file uploads and access, ensuring security and traceability.
+A **production-style deployment** of a TypeScript / Node.js application on a **Microsoft Azure Virtual Machine**, using **Docker**, **NGINX reverse proxy**, **Dynamic DNS**, and **Let’s Encrypt HTTPS**.
 
-## Core Features
-- **Upload documents**: Securely upload files to the system.
-- **Generate document hash**: Automatic generation of unique SHA-256 cryptographic fingerprints.
-- **Verify document integrity**: Instantly check if a document matches the registered immutable record.
-- **View audit logs**: Comprehensive tracking of all verification attempts and system access.
+---
 
-## Azure & DevOps Usage
-- **Azure Blob Storage**: Scalable cloud storage for secure document retention.
-- **Azure Cosmos DB**: Globally distributed database for storing document hashes and audit logs.
-- **Dockerized backend**: Containerized application for consistent deployment across environments.
-- **NGINX**: High-performance reverse proxy for UI and API routing.
-- **GitHub Actions**: Automated CI/CD pipeline for testing and deployment.
+## 🧱 Architecture Overview
 
-## Tech Stack
-- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
-- **Database**: MongoDB / Azure Cosmos DB
-- **Styling**: Tailwind CSS
-- **Authentication**: JWT with secure HTTP-only cookies
+User Browser
+↓
+HTTPS (443)
+↓
+Domain (DDNS)
+↓
+Azure VM (Static Public IP)
+↓
+NGINX (Reverse Proxy + SSL Termination)
+↓
+Docker Container (Private)
+↓
+TypeScript / Node.js App (localhost)
+↓
+Azure Cosmos DB
 
-## Getting Started
+---
 
-### Prerequisites
-- Node.js 18+ installed
-- MongoDB instance (Atlas or local) OR Azure Cosmos DB account
+## ☁️ Infrastructure
 
-### Installation
+### Virtual Machine
+- **Cloud Provider**: Microsoft Azure
+- **OS**: Ubuntu 22.04 LTS
+- **VM Size**: B1s
+- **Public IP**: **Static IPv4**
 
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd document-verification-audit-log-system
-   ```
+### Open Ports
+| Port | Usage |
+|----|----|
+| 22 | SSH access |
+| 80 | HTTP (redirects to HTTPS) |
+| 443 | HTTPS |
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+Static IP ensures DNS and database firewall rules remain stable.
 
-3. Configure environment variables:
-   Copy `.example.env` to `.env`:
-   ```bash
-   cp .example.env .env
-   ```
-   
-   Update the `.env` file with your connection strings (MongoDB or Cosmos DB).
+---
 
-4. Run the development server:
-   ```bash
-   npm run dev
-   ```
+## 🐳 Dockerized Application
 
-5. Open [http://localhost:3000](http://localhost:3000) with your browser.
+The application is containerized using Docker.
 
-## Project Structure
-- `/app`: Next.js App Router pages and API routes
-- `/components`: Reusable UI components
-- `/lib`: Utility functions, database connection, and types
-- `/public`: Static assets
+### Why Docker?
+- Environment consistency
+- Easy restarts and upgrades
+- CI/CD compatibility
+- Clean separation from host OS
 
-## License
-MIT
+---
+
+## 🌐 NGINX Reverse Proxy
+
+NGINX acts as a **reverse proxy** between the internet and the Docker container.
+
+### Responsibilities
+- Accept incoming HTTP/HTTPS traffic
+- Forward requests to the Docker container
+- Terminate SSL (HTTPS)
+- Handle HTTP → HTTPS redirection
+
+### Traffic Flow
+
+Internet → NGINX (80/443) → localhost:3000 (Docker)
+
+---
+
+## 🔐 HTTPS with Let’s Encrypt
+
+HTTPS is enabled using **Let’s Encrypt** and **Certbot**.
+
+### Features
+- Free SSL certificates
+- Automatic certificate renewal
+- Secure HTTPS access
+- HTTP automatically redirects to HTTPS
+
+### Auto-Renewal
+Certbot installs a system timer to renew certificates automatically every 90 days.
+
+---
+
+## 🌍 Domain & Dynamic DNS (DDNS)
+
+A **Dynamic DNS provider** is used to map a domain to the VM’s static public IP.
+
+---
+
+## 🗄️ Database: Azure Cosmos DB
+
+The application connects to **Azure Cosmos DB**.
+
+### Networking Configuration
+- Azure VM uses a **static public IP**
+- This IP is explicitly allowed in Cosmos DB firewall rules
+- “Allow Azure services” is **not used**, as it does not include Azure VMs
+
+### Result
+- Secure access
+- No unexpected connection failures
+- Production-safe configuration
+
+---
+
+## 🔁 CI/CD Readiness
+
+The project is structured to support **CI/CD with GitHub Actions**.
+
+### Intended Pipeline Flow
+
+
+git push
+↓
+GitHub Actions
+↓
+Build Docker image
+↓
+Push image to registry
+↓
+SSH into Azure VM
+↓
+Pull latest image
+↓
+Restart container
+
+
+This enables **zero-manual redeploys** after initial setup.
+
+---

@@ -159,7 +159,7 @@ export default function Page() {
               </h1>
 
               <p className="text-xl text-gray-500 max-w-lg mx-auto mb-12 leading-relaxed">
-                The simplest way to cryptographically secure your business documents. Drag, drop, and done.
+                The simplest way to secure your business documents. Drag, drop, and done.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -311,8 +311,8 @@ export default function Page() {
                     a: "Our audit logs provide a mathematically provable chain of custody, which is widely accepted for compliance (SOC2, ISO) and legal verification purposes."
                   },
                   {
-                    q: "Can I integrate this with my API?",
-                    a: "Yes! We offer a full REST API for enterprise customers to automate hashing and verification within their own workflows."
+                    q: "Is my data secure?",
+                    a: "Absolutely. We use industry-standard encryption and immutable audit logs to ensure your data's integrity and confidentiality."
                   }
                 ].map((item, i) => (
                   <div
