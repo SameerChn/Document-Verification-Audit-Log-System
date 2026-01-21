@@ -18,6 +18,7 @@ yarn-error.log*
 
 # env files
 .env*
+.gitignore
 
 # vercel
 .vercel
@@ -26,5 +27,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# remove zip
+# remove unwanted files
 document-verification-system.zip
+
+Document Verification & Audit System Pre Final Thesis.pdf
+azureuser_key_1221.pem
